@@ -1,10 +1,12 @@
+from pathlib import Path
+
 from fastapi import FastAPI, HTTPException
 
 from .session_manager import SessionManager
 
 
 app = FastAPI(title="Computer Use Demo API")
-session_manager = SessionManager()
+session_manager = SessionManager(Path(__file__).resolve().parent / "data" / "sessions.db")
 
 
 @app.get("/health")
