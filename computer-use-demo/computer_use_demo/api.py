@@ -23,17 +23,20 @@ app.mount(
 
 @app.get("/health")
 def health_check() -> dict[str, str]:
+    """Health check endpoint for uptime probes."""
     return {"status": "ok"}
 
 
 @app.post("/sessions")
 def create_session() -> dict[str, str]:
+    """Create a new session and return its metadata."""
     session = session_manager.create()
     return {"id": session.id, "created_at": session.created_at.isoformat()}
 
 
 @app.get("/sessions/{session_id}")
 def get_session(session_id: str) -> dict[str, str]:
+    """Fetch session metadata by id."""
     session = session_manager.get(session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="session not found")
@@ -41,15 +44,18 @@ def get_session(session_id: str) -> dict[str, str]:
 
 
 class MessageIn(BaseModel):
+    """Payload for storing a chat message."""
     role: str
     content: str
 
 
 class EventIn(BaseModel):
+    """Payload for publishing a streaming event."""
     message: str
 
 
 class RunIn(BaseModel):
+    """Payload for launching an agent run."""
     model: str
     provider: str = "anthropic"
     system_prompt_suffix: str = ""
@@ -60,9 +66,9 @@ class RunIn(BaseModel):
     only_n_most_recent_images: int | None = None
 
 
-# Add a message to session.
 @app.post("/sessions/{session_id}/messages")
 def add_message(session_id: str, message: MessageIn) -> dict[str, str]:
+    """Persist a message for the given session."""
     session = session_manager.get(session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="session not found")
@@ -70,9 +76,9 @@ def add_message(session_id: str, message: MessageIn) -> dict[str, str]:
     return {"status": "ok"}
 
 
-# Get messages from session.
 @app.get("/sessions/{session_id}/messages")
 def list_messages(session_id: str) -> list[dict[str, str]]:
+    """List chat history for a session."""
     session = session_manager.get(session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="session not found")
@@ -81,6 +87,7 @@ def list_messages(session_id: str) -> list[dict[str, str]]:
 
 @app.get("/sessions/{session_id}/events")
 async def stream_events(session_id: str, request: Request) -> StreamingResponse:
+    """Stream session events over Server-Sent Events (SSE)."""
     session = session_manager.get(session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="session not found")
@@ -96,6 +103,7 @@ async def stream_events(session_id: str, request: Request) -> StreamingResponse:
 
 @app.post("/sessions/{session_id}/events")
 async def publish_event(session_id: str, event: EventIn) -> dict[str, str]:
+    """Publish a single event to the session stream."""
     session = session_manager.get(session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="session not found")
@@ -105,6 +113,7 @@ async def publish_event(session_id: str, event: EventIn) -> dict[str, str]:
 
 @app.post("/sessions/{session_id}/run")
 async def run_session(session_id: str, run: RunIn) -> dict[str, str]:
+    """Start the agent loop in the background for a session."""
     session = session_manager.get(session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="session not found")
