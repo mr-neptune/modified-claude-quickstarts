@@ -6,11 +6,14 @@ from typing import AsyncIterator
 
 
 class EventBroker:
+    """In-process pub/sub for streaming session events."""
+
     def __init__(self) -> None:
         self._subscribers: dict[str, set[asyncio.Queue[str]]] = defaultdict(set)
         self._lock = asyncio.Lock()
 
     async def subscribe(self, session_id: str) -> AsyncIterator[str]:
+        """Yield messages published for a session until the client disconnects."""
         queue: asyncio.Queue[str] = asyncio.Queue()
         async with self._lock:
             self._subscribers[session_id].add(queue)
@@ -24,6 +27,7 @@ class EventBroker:
                     self._subscribers.pop(session_id, None)
 
     async def publish(self, session_id: str, message: str) -> None:
+        """Broadcast a message to all subscribers of a session."""
         async with self._lock:
             queues = list(self._subscribers.get(session_id, set()))
         for queue in queues:

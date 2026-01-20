@@ -16,6 +16,8 @@ from .tools import ToolResult, ToolVersion
 
 @dataclass(frozen=True)
 class RunConfig:
+    """Runtime parameters for a session run."""
+
     model: str
     provider: str
     system_prompt_suffix: str
@@ -27,6 +29,8 @@ class RunConfig:
 
 
 class SessionRunner:
+    """Executes the agent loop for a session and streams progress events."""
+
     def __init__(self, session_manager: SessionManager, event_broker: EventBroker) -> None:
         self._session_manager = session_manager
         self._event_broker = event_broker
@@ -34,6 +38,7 @@ class SessionRunner:
         self._tasks: dict[str, asyncio.Task[None]] = {}
 
     async def start(self, session_id: str, config: RunConfig) -> bool:
+        """Start a session run if one is not already active."""
         async with self._lock:
             existing = self._tasks.get(session_id)
             if existing and not existing.done():
@@ -43,6 +48,7 @@ class SessionRunner:
         return True
 
     async def _run_session(self, session_id: str, config: RunConfig) -> None:
+        """Run the agent loop and emit stream events for outputs and tool results."""
         api_key = os.environ.get("ANTHROPIC_API_KEY", "")
         provider = APIProvider(config.provider)
 
@@ -102,6 +108,7 @@ class SessionRunner:
             publish_event({"type": "run_error", "error": str(exc)})
 
     def _build_messages(self, session_id: str) -> list[BetaMessageParam]:
+        """Build Claude message history from stored chat records."""
         history = self._session_manager.list_messages(session_id)
         messages: list[BetaMessageParam] = []
         for item in history:
