@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Computer Use Demo API</title>
+    <style>
+      body {
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        margin: 32px;
+        max-width: 720px;
+      }
+      button {
+        margin-right: 8px;
+      }
+      textarea {
+        width: 100%;
+        min-height: 120px;
+      }
+      .row {
+        margin: 12px 0;
+      }
+      #events {
+        background: #f5f5f5;
+        padding: 12px;
+        min-height: 120px;
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Computer Use Demo API</h1>
+    <div class="row">
+      <button id="create-session">Create Session</button>
+      <span id="session-id">no session</span>
+    </div>
+    <div class="row">
+      <textarea id="message" placeholder="Type a message..."></textarea>
+      <button id="send-message">Send Message</button>
+    </div>
+    <div class="row">
+      <textarea id="event" placeholder="Type an event..."></textarea>
+      <button id="send-event">Send Event</button>
+    </div>
+    <div class="row">
+      <strong>Events</strong>
+      <div id="events"></div>
+    </div>
+    <script src="/static/app.js"></script>
+  </body>
+</html>
